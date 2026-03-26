@@ -59,8 +59,9 @@ function App() {
 
   const handleSignIn = async () => {
     setLoading(true)
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password })
-    if (error) {
+    const { data, error } = 
+    if (error) {await new Promise(resolve => setTimeout(resolve, 1000))
+await supabase.from('users').update({ prenom }).eq('id', data.user.id)
       setMessage('Erreur : ' + error.message)
     } else {
       setUser(data.user)
