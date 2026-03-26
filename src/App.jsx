@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import Onboarding from './Onboarding'
+import Dashboard from './Dashboard'
 
 const supabase = createClient(
   'https://ibrqwdhrzlrihczfovmp.supabase.co',
@@ -59,9 +60,8 @@ function App() {
 
   const handleSignIn = async () => {
     setLoading(true)
-    const { data, error } = 
-    if (error) {await new Promise(resolve => setTimeout(resolve, 1000))
-await supabase.from('users').update({ prenom }).eq('id', data.user.id)
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+    if (error) {
       setMessage('Erreur : ' + error.message)
     } else {
       setUser(data.user)
@@ -147,29 +147,14 @@ await supabase.from('users').update({ prenom }).eq('id', data.user.id)
     <Onboarding user={user} onComplete={() => loadProfile(user.id)} />
   )
 
-  if (screen === 'dashboard') return (
-    <div style={{minHeight:'100vh',background:'#f8f5ef',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'2rem',fontFamily:'sans-serif',textAlign:'center'}}>
-      <div style={{width:'10px',height:'10px',borderRadius:'50%',background:'#1a9e6e',marginBottom:'12px'}}></div>
-      <h2 style={{fontWeight:'800',color:'#111',marginBottom:'8px'}}>
-        Bonjour {profile?.prenom || 'champion(ne)'} 👋
-      </h2>
-      <div style={{background:'white',borderRadius:'16px',padding:'16px 20px',marginBottom:'16px',boxShadow:'0 4px 16px rgba(0,0,0,0.06)'}}>
-        <div style={{fontSize:'0.78rem',color:'#6b7a6a',marginBottom:'4px'}}>Objectif</div>
-        <div style={{fontWeight:'600',color:'#1a9e6e'}}>
-          {profile?.objectif === 'poids' ? '🔥 Perte de poids' : profile?.objectif === 'muscle' ? '💪 Musculation' : '⚡ Énergie'}
-        </div>
-      </div>
-      <div style={{background:'white',borderRadius:'16px',padding:'16px 20px',marginBottom:'24px',boxShadow:'0 4px 16px rgba(0,0,0,0.06)'}}>
-        <div style={{fontSize:'0.78rem',color:'#6b7a6a',marginBottom:'4px'}}>Budget équipement</div>
-        <div style={{fontWeight:'600',color:'#1a9e6e'}}>${profile?.budget_equipement || 0}</div>
-      </div>
-      <p style={{color:'#6b7a6a',marginBottom:'32px',fontSize:'0.9rem'}}>Votre espace HomeStrong est prêt. Les écrans arrivent bientôt !</p>
-      <button onClick={handleSignOut}
-        style={{background:'#1a9e6e',color:'white',border:'none',borderRadius:'99px',padding:'12px 24px',cursor:'pointer',fontSize:'0.9rem'}}>
-        Se déconnecter
-      </button>
-    </div>
-  )
+   if (screen === 'dashboard') return (
+  <Dashboard 
+    user={user} 
+    profile={profile} 
+    onSignOut={handleSignOut} 
+  />
+)
+
 }
 
 export default App
