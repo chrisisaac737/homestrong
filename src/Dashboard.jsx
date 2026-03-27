@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import Programme from './Programme'
+import Nutrition from './Nutrition'
 
 const supabase = createClient(
   'https://ibrqwdhrzlrihczfovmp.supabase.co',
@@ -10,8 +11,8 @@ const supabase = createClient(
 export default function Dashboard({ user, profile, onSignOut }) {
   const [stats, setStats] = useState({ seances: 0, calories: 0, streak: 0 })
   const [loading, setLoading] = useState(true)
-  const [showProgramme, setShowProgramme] = useState(false)
-
+ const [showProgramme, setShowProgramme] = useState(false)
+const [showNutrition, setShowNutrition] = useState(false)
   useEffect(() => {
     if (user) loadStats()
   }, [user])
@@ -61,8 +62,14 @@ export default function Dashboard({ user, profile, onSignOut }) {
     poids: 'Chaque séance te rapproche de ton objectif — continue !',
     muscle: 'La régularité construit les muscles — tu es sur la bonne voie !',
     energie: 'Ton énergie grandit à chaque séance — garde le rythme !'
-  }
-
+  } 
+  if (showNutrition) return (
+  <Nutrition
+    user={user}
+    profile={profile}
+    onBack={() => setShowNutrition(false)}
+  />
+) 
   if (showProgramme) return (
     <Programme
       user={user}
@@ -147,6 +154,12 @@ export default function Dashboard({ user, profile, onSignOut }) {
           </div>
           <div style={{fontSize:'1.5rem'}}>🛒</div>
         </div>
+      </div>
+
+    <div style={{padding:'0 16px 24px'}}>
+        <button onClick={() => setShowNutrition(true)} style={{width:'100%',padding:'14px',borderRadius:'99px',border:'none',background:'#e8f7f1',color:'#0d6b49',fontWeight:'600',fontSize:'0.9rem',cursor:'pointer'}}>
+          🍎 Voir mon plan nutrition →
+        </button>
       </div>
 
     </div>
