@@ -10,7 +10,7 @@ const supabase = createClient(
 )
 
 export default function Dashboard({ user, profile, onSignOut }) {
-  const [stats, setStats] = useState({ seances: 0, calories: 0, streak: 0 })
+  const [stats, setStats] = useState({ seances: 0, calories: 0, streak: 0, seancesAujourdhui: 0 }) 
   const [loading, setLoading] = useState(true)
   const [showProgramme, setShowProgramme] = useState(false)
   const [showNutrition, setShowNutrition] = useState(false)
@@ -21,23 +21,27 @@ export default function Dashboard({ user, profile, onSignOut }) {
   }, [user])
 
   const loadStats = async () => {
-    setLoading(true)
-    const weekAgo = new Date()
-    weekAgo.setDate(weekAgo.getDate() - 7)
-    const { data: workouts } = await supabase
-      .from('workouts')
-      .select('duree_min, calories, date')
-      .eq('user_id', user.id)
-      .gte('date', weekAgo.toISOString().split('T')[0])
-      .order('date', { ascending: false })
-    if (workouts) {
-      const seances = workouts.length
-      const calories = workouts.reduce((sum, w) => sum + (w.calories || 0), 0)
-      const streak = calcStreak(workouts)
-      setStats({ seances, calories, streak })
-    }
-    setLoading(false)
+  setLoading(true)
+  const weekAgo = new Date()
+  weekAgo.setDate(weekAgo.getDate() - 7)
+  const today = new Date().toISOString().split('T')[0]
+
+  const { data: workouts } = await supabase
+    .from('workouts')
+    .select('duree_min, calories, date')
+    .eq('user_id', user.id)
+    .gte('date', weekAgo.toISOString().split('T')[0])
+    .order('date', { ascending: false })
+
+  if (workouts) {
+    const seances = workouts.length
+    const calories = workouts.reduce((sum, w) => sum + (w.calories || 0), 0)
+    const streak = calcStreak(workouts)
+    const seancesAujourdhui = workouts.filter(w => w.date === today).length
+    setStats({ seances, calories, streak, seancesAujourdhui })
   }
+  setLoading(false)
+}
 
   const calcStreak = (workouts) => {
     if (!workouts || workouts.length === 0) return 0
@@ -154,7 +158,7 @@ export default function Dashboard({ user, profile, onSignOut }) {
             Voir tous mes programmes →
           </button>
           <div style={{fontSize:'0.72rem',color:'rgba(255,255,255,0.5)',marginTop:'8px'}}>
-            💪 Séances aujourd'hui : {stats.seances}
+            💪 Séances aujourd'hui : {stats.seancesAujourdhui} · Cette semaine : {stats.seances}
           </div>
         </div>
       </div>
