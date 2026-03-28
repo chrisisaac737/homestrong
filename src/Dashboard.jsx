@@ -138,8 +138,11 @@ const [showNutrition, setShowNutrition] = useState(false)
             <span style={{fontSize:'0.75rem',color:'rgba(255,255,255,0.5)'}}>🔥 180 kcal</span>
           </div>
           <button onClick={() => setShowProgramme(true)} style={{background:'#1a9e6e',color:'white',border:'none',borderRadius:'99px',padding:'11px 20px',fontWeight:'500',fontSize:'0.85rem',cursor:'pointer'}}>
-            Démarrer la séance →
-          </button>
+  Voir tous mes programmes →
+</button>
+<div style={{fontSize:'0.72rem',color:'rgba(255,255,255,0.5)',marginTop:'8px'}}>
+  💪 Séances aujourd'hui : {stats.seances}
+</div>
         </div>
       </div>
 
