@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import Programme from './Programme'
 import Nutrition from './Nutrition'
+import Equipements from './Equipements'
 
 const supabase = createClient(
   'https://ibrqwdhrzlrihczfovmp.supabase.co',
@@ -11,8 +12,10 @@ const supabase = createClient(
 export default function Dashboard({ user, profile, onSignOut }) {
   const [stats, setStats] = useState({ seances: 0, calories: 0, streak: 0 })
   const [loading, setLoading] = useState(true)
- const [showProgramme, setShowProgramme] = useState(false)
-const [showNutrition, setShowNutrition] = useState(false)
+  const [showProgramme, setShowProgramme] = useState(false)
+  const [showNutrition, setShowNutrition] = useState(false)
+  const [showEquipements, setShowEquipements] = useState(false)
+
   useEffect(() => {
     if (user) loadStats()
   }, [user])
@@ -62,14 +65,24 @@ const [showNutrition, setShowNutrition] = useState(false)
     poids: 'Chaque séance te rapproche de ton objectif — continue !',
     muscle: 'La régularité construit les muscles — tu es sur la bonne voie !',
     energie: 'Ton énergie grandit à chaque séance — garde le rythme !'
-  } 
+  }
+
+  if (showEquipements) return (
+    <Equipements
+      user={user}
+      profile={profile}
+      onBack={() => setShowEquipements(false)}
+    />
+  )
+
   if (showNutrition) return (
-  <Nutrition
-    user={user}
-    profile={profile}
-    onBack={() => setShowNutrition(false)}
-  />
-) 
+    <Nutrition
+      user={user}
+      profile={profile}
+      onBack={() => setShowNutrition(false)}
+    />
+  )
+
   if (showProgramme) return (
     <Programme
       user={user}
@@ -138,15 +151,15 @@ const [showNutrition, setShowNutrition] = useState(false)
             <span style={{fontSize:'0.75rem',color:'rgba(255,255,255,0.5)'}}>🔥 180 kcal</span>
           </div>
           <button onClick={() => setShowProgramme(true)} style={{background:'#1a9e6e',color:'white',border:'none',borderRadius:'99px',padding:'11px 20px',fontWeight:'500',fontSize:'0.85rem',cursor:'pointer'}}>
-  Voir tous mes programmes →
-</button>
-<div style={{fontSize:'0.72rem',color:'rgba(255,255,255,0.5)',marginTop:'8px'}}>
-  💪 Séances aujourd'hui : {stats.seances}
-</div>
+            Voir tous mes programmes →
+          </button>
+          <div style={{fontSize:'0.72rem',color:'rgba(255,255,255,0.5)',marginTop:'8px'}}>
+            💪 Séances aujourd'hui : {stats.seances}
+          </div>
         </div>
       </div>
 
-      <div style={{padding:'12px 16px 24px'}}>
+      <div style={{padding:'12px 16px 0'}}>
         <div style={{fontSize:'0.72rem',fontWeight:'700',color:'#6b7a6a',letterSpacing:'0.06em',textTransform:'uppercase',marginBottom:'8px'}}>
           Budget équipement
         </div>
@@ -159,9 +172,15 @@ const [showNutrition, setShowNutrition] = useState(false)
         </div>
       </div>
 
-    <div style={{padding:'0 16px 24px'}}>
+      <div style={{padding:'12px 16px 0'}}>
         <button onClick={() => setShowNutrition(true)} style={{width:'100%',padding:'14px',borderRadius:'99px',border:'none',background:'#e8f7f1',color:'#0d6b49',fontWeight:'600',fontSize:'0.9rem',cursor:'pointer'}}>
           🍎 Voir mon plan nutrition →
+        </button>
+      </div>
+
+      <div style={{padding:'12px 16px 24px'}}>
+        <button onClick={() => setShowEquipements(true)} style={{width:'100%',padding:'14px',borderRadius:'99px',border:'none',background:'#fff8e8',color:'#EF9F27',fontWeight:'600',fontSize:'0.9rem',cursor:'pointer'}}>
+          🏋️ Voir mes équipements recommandés →
         </button>
       </div>
 
