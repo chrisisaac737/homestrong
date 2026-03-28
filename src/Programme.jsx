@@ -197,24 +197,33 @@ export default function Programme({ user, profile, onBack }) {
     setVue('exercice')
   }
 
-  const exerciceSuivant = () => {
-    const exs = exercicesData[seanceActive.id] || []
-    const exActuel = exs[exerciceIndex]
-    if (serieActuelle < exActuel.series) {
-      setSerieActuelle(s => s + 1)
-      setTimerVal(exActuel.duree)
-      setTimerRunning(false)
-    } else if (exerciceIndex < exs.length - 1) {
-      const nextIdx = exerciceIndex + 1
-      setExerciceIndex(nextIdx)
-      setSerieActuelle(1)
-      setTimerVal(exs[nextIdx].duree)
-      setTimerRunning(false)
-    } else {
-      terminerSeance()
-    }
-  }
+  const exerciceSuivant = async () => {
+  const exs = exercicesData[seanceActive.id] || []
+  const exActuel = exs[exerciceIndex]
+  
+  // Sauvegarder l'exercice complété
+  await supabase.from('exercises').insert({
+    user_id: user.id,
+    nom: exActuel.nom,
+    serie: serieActuelle,
+    duree_sec: exActuel.duree,
+    date: new Date().toISOString().split('T')[0]
+  })
 
+  if (serieActuelle < exActuel.series) {
+    setSerieActuelle(s => s + 1)
+    setTimerVal(exActuel.duree)
+    setTimerRunning(false)
+  } else if (exerciceIndex < exs.length - 1) {
+    const nextIdx = exerciceIndex + 1
+    setExerciceIndex(nextIdx)
+    setSerieActuelle(1)
+    setTimerVal(exs[nextIdx].duree)
+    setTimerRunning(false)
+  } else {
+    terminerSeance()
+  }
+}
   const terminerSeance = async () => {
     setSaving(true)
     const dureeReelle = seanceActive.duree[niveau] || seanceActive.duree.intermediate

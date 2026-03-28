@@ -10,7 +10,8 @@ const supabase = createClient(
 )
 
 export default function Dashboard({ user, profile, onSignOut }) {
-  const [stats, setStats] = useState({ seances: 0, calories: 0, streak: 0, seancesAujourdhui: 0 }) 
+
+  const [stats, setStats] = useState({ seances: 0, calories: 0, streak: 0, seancesAujourdhui: 0, exercicesAujourdhui: 0, exercicesSemaine: 0 })
   const [loading, setLoading] = useState(true)
   const [showProgramme, setShowProgramme] = useState(false)
   const [showNutrition, setShowNutrition] = useState(false)
@@ -33,12 +34,20 @@ export default function Dashboard({ user, profile, onSignOut }) {
     .gte('date', weekAgo.toISOString().split('T')[0])
     .order('date', { ascending: false })
 
+  const { data: exercices } = await supabase
+    .from('exercises')
+    .select('date')
+    .eq('user_id', user.id)
+    .gte('date', weekAgo.toISOString().split('T')[0])
+
   if (workouts) {
     const seances = workouts.length
     const calories = workouts.reduce((sum, w) => sum + (w.calories || 0), 0)
     const streak = calcStreak(workouts)
     const seancesAujourdhui = workouts.filter(w => w.date === today).length
-    setStats({ seances, calories, streak, seancesAujourdhui })
+    const exercicesAujourdhui = exercices ? exercices.filter(e => e.date === today).length : 0
+    const exercicesSemaine = exercices ? exercices.length : 0
+    setStats({ seances, calories, streak, seancesAujourdhui, exercicesAujourdhui, exercicesSemaine })
   }
   setLoading(false)
 }
@@ -159,6 +168,7 @@ export default function Dashboard({ user, profile, onSignOut }) {
           </button>
           <div style={{fontSize:'0.72rem',color:'rgba(255,255,255,0.5)',marginTop:'8px'}}>
             💪 Séances aujourd'hui : {stats.seancesAujourdhui} · Cette semaine : {stats.seances}
+🏃 Exercices aujourd'hui : {stats.exercicesAujourdhui} · Cette semaine : {stats.exercicesSemaine}
           </div>
         </div>
       </div>
