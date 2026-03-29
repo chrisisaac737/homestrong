@@ -3,6 +3,7 @@ import { createClient } from '@supabase/supabase-js'
 import Programme from './Programme'
 import Nutrition from './Nutrition'
 import Equipements from './Equipements'
+import Profil from './Profil'
 
 const supabase = createClient(
   'https://ibrqwdhrzlrihczfovmp.supabase.co',
@@ -10,47 +11,47 @@ const supabase = createClient(
 )
 
 export default function Dashboard({ user, profile, onSignOut }) {
-
   const [stats, setStats] = useState({ seances: 0, calories: 0, streak: 0, seancesAujourdhui: 0, exercicesAujourdhui: 0, exercicesSemaine: 0 })
   const [loading, setLoading] = useState(true)
   const [showProgramme, setShowProgramme] = useState(false)
   const [showNutrition, setShowNutrition] = useState(false)
   const [showEquipements, setShowEquipements] = useState(false)
+  const [showProfil, setShowProfil] = useState(false)
 
   useEffect(() => {
     if (user) loadStats()
   }, [user])
 
   const loadStats = async () => {
-  setLoading(true)
-  const weekAgo = new Date()
-  weekAgo.setDate(weekAgo.getDate() - 7)
-  const today = new Date().toISOString().split('T')[0]
+    setLoading(true)
+    const weekAgo = new Date()
+    weekAgo.setDate(weekAgo.getDate() - 7)
+    const today = new Date().toISOString().split('T')[0]
 
-  const { data: workouts } = await supabase
-    .from('workouts')
-    .select('duree_min, calories, date')
-    .eq('user_id', user.id)
-    .gte('date', weekAgo.toISOString().split('T')[0])
-    .order('date', { ascending: false })
+    const { data: workouts } = await supabase
+      .from('workouts')
+      .select('duree_min, calories, date')
+      .eq('user_id', user.id)
+      .gte('date', weekAgo.toISOString().split('T')[0])
+      .order('date', { ascending: false })
 
-  const { data: exercices } = await supabase
-    .from('exercises')
-    .select('date')
-    .eq('user_id', user.id)
-    .gte('date', weekAgo.toISOString().split('T')[0])
+    const { data: exercices } = await supabase
+      .from('exercises')
+      .select('date')
+      .eq('user_id', user.id)
+      .gte('date', weekAgo.toISOString().split('T')[0])
 
-  if (workouts) {
-    const seances = workouts.length
-    const calories = workouts.reduce((sum, w) => sum + (w.calories || 0), 0)
-    const streak = calcStreak(workouts)
-    const seancesAujourdhui = workouts.filter(w => w.date === today).length
-    const exercicesAujourdhui = exercices ? exercices.filter(e => e.date === today).length : 0
-    const exercicesSemaine = exercices ? exercices.length : 0
-    setStats({ seances, calories, streak, seancesAujourdhui, exercicesAujourdhui, exercicesSemaine })
+    if (workouts) {
+      const seances = workouts.length
+      const calories = workouts.reduce((sum, w) => sum + (w.calories || 0), 0)
+      const streak = calcStreak(workouts)
+      const seancesAujourdhui = workouts.filter(w => w.date === today).length
+      const exercicesAujourdhui = exercices ? exercices.filter(e => e.date === today).length : 0
+      const exercicesSemaine = exercices ? exercices.length : 0
+      setStats({ seances, calories, streak, seancesAujourdhui, exercicesAujourdhui, exercicesSemaine })
+    }
+    setLoading(false)
   }
-  setLoading(false)
-}
 
   const calcStreak = (workouts) => {
     if (!workouts || workouts.length === 0) return 0
@@ -79,6 +80,15 @@ export default function Dashboard({ user, profile, onSignOut }) {
     muscle: 'La régularité construit les muscles — tu es sur la bonne voie !',
     energie: 'Ton énergie grandit à chaque séance — garde le rythme !'
   }
+
+  if (showProfil) return (
+    <Profil
+      user={user}
+      profile={profile}
+      onBack={() => setShowProfil(false)}
+      onUpdate={() => loadStats()}
+    />
+  )
 
   if (showEquipements) return (
     <Equipements
@@ -113,9 +123,14 @@ export default function Dashboard({ user, profile, onSignOut }) {
             <div style={{width:'7px',height:'7px',borderRadius:'50%',background:'#d4e84a'}}></div>
             <span style={{color:'white',fontWeight:'700',fontSize:'0.95rem'}}>HomeStrong</span>
           </div>
-          <button onClick={onSignOut} style={{background:'rgba(255,255,255,0.1)',color:'rgba(255,255,255,0.7)',border:'none',borderRadius:'99px',padding:'6px 14px',fontSize:'0.75rem',cursor:'pointer'}}>
-            Déconnexion
-          </button>
+          <div style={{display:'flex',gap:'8px'}}>
+            <button onClick={() => setShowProfil(true)} style={{background:'rgba(255,255,255,0.1)',color:'rgba(255,255,255,0.7)',border:'none',borderRadius:'99px',padding:'6px 14px',fontSize:'0.75rem',cursor:'pointer'}}>
+              ⚙️ Profil
+            </button>
+            <button onClick={onSignOut} style={{background:'rgba(255,255,255,0.1)',color:'rgba(255,255,255,0.7)',border:'none',borderRadius:'99px',padding:'6px 14px',fontSize:'0.75rem',cursor:'pointer'}}>
+              Déconnexion
+            </button>
+          </div>
         </div>
         <div style={{fontSize:'0.78rem',color:'rgba(255,255,255,0.4)',marginBottom:'4px'}}>Bonjour 👋</div>
         <div style={{fontSize:'1.4rem',fontWeight:'800',color:'white',marginBottom:'8px'}}>
@@ -168,7 +183,7 @@ export default function Dashboard({ user, profile, onSignOut }) {
           </button>
           <div style={{fontSize:'0.72rem',color:'rgba(255,255,255,0.5)',marginTop:'8px'}}>
             💪 Séances aujourd'hui : {stats.seancesAujourdhui} · Cette semaine : {stats.seances}
-🏃 Exercices aujourd'hui : {stats.exercicesAujourdhui} · Cette semaine : {stats.exercicesSemaine}
+            🏃 Exercices aujourd'hui : {stats.exercicesAujourdhui} · Cette semaine : {stats.exercicesSemaine}
           </div>
         </div>
       </div>
