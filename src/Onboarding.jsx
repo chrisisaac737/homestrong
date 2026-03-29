@@ -12,6 +12,7 @@ export default function Onboarding({ user, onComplete }) {
   const [budget, setBudget] = useState(100)
   const [style, setStyle] = useState('')
   const [niveau, setNiveau] = useState('')
+  const [allergies, setAllergies] = useState([])
   const [loading, setLoading] = useState(false)
 
   const saveProfile = async () => {
@@ -21,6 +22,7 @@ export default function Onboarding({ user, onComplete }) {
       budget_equipement: budget,
       style,
       niveau,
+      allergies,
     }).eq('id', user.id)
     setLoading(false)
     onComplete()
@@ -43,15 +45,13 @@ export default function Onboarding({ user, onComplete }) {
   return (
     <div style={{minHeight:'100vh',background:'#f8f5ef',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'1.5rem',fontFamily:'sans-serif'}}>
       <div style={{background:'white',borderRadius:'20px',padding:'2rem',width:'100%',maxWidth:'400px',boxShadow:'0 8px 32px rgba(0,0,0,0.08)'}}>
-        
-        {/* Barre de progression */}
+
         <div style={{display:'flex',gap:'6px',marginBottom:'24px'}}>
-          {[1,2,3,4].map(i => (
+          {[1,2,3,4,5].map(i => (
             <div key={i} style={{flex:1,height:'4px',borderRadius:'99px',background: i <= step ? '#1a9e6e' : '#eee'}}></div>
           ))}
         </div>
 
-        {/* ÉTAPE 1 — Objectif */}
         {step === 1 && (
           <>
             <h2 style={{fontWeight:'800',color:'#111',marginBottom:'4px'}}>Quel est ton objectif ?</h2>
@@ -72,23 +72,21 @@ export default function Onboarding({ user, onComplete }) {
           </>
         )}
 
-        {/* ÉTAPE 2 — Budget */}
         {step === 2 && (
           <>
             <h2 style={{fontWeight:'800',color:'#111',marginBottom:'4px'}}>Ton budget équipement ?</h2>
             <p style={{color:'#6b7a6a',fontSize:'0.85rem',marginBottom:'20px'}}>On te recommande exactement ce qu'il te faut.</p>
             <div style={{background:'#e8f7f1',borderRadius:'12px',padding:'16px',marginBottom:'16px',textAlign:'center'}}>
-              <div style={{fontFamily:'sans-serif',fontSize:'2rem',fontWeight:'800',color:'#111'}}>${budget}</div>
+              <div style={{fontSize:'2rem',fontWeight:'800',color:'#111'}}>${budget}</div>
               <div style={{fontSize:'0.78rem',color:'#6b7a6a'}}>budget équipement</div>
             </div>
-            <input type="range" min="0" max="500" step="10" value={budget} onChange={e => setBudget(parseInt(e.target.value))}
-              style={{width:'100%',marginBottom:'8px'}} />
+            <input type="range" min="0" max="500" step="10" value={budget} onChange={e => setBudget(parseInt(e.target.value))} style={{width:'100%',marginBottom:'8px'}} />
             <div style={{display:'flex',justifyContent:'space-between',fontSize:'0.72rem',color:'#6b7a6a',marginBottom:'16px'}}>
               <span>$0</span><span>$500+</span>
             </div>
             {budget === 0 && (
               <div style={{background:'#e8f7f1',borderRadius:'12px',padding:'12px',marginBottom:'16px',fontSize:'0.82rem',color:'#0d6b49'}}>
-                💪 Parfait ! HomeStrong propose des programmes complets au poids du corps — pompes, squats, burpees. Ton corps est ton meilleur équipement !
+                💪 Parfait ! HomeStrong propose des programmes complets au poids du corps. Ton corps est ton meilleur équipement !
               </div>
             )}
             <div style={{display:'flex',gap:'8px'}}>
@@ -98,7 +96,6 @@ export default function Onboarding({ user, onComplete }) {
           </>
         )}
 
-        {/* ÉTAPE 3 — Style */}
         {step === 3 && (
           <>
             <h2 style={{fontWeight:'800',color:'#111',marginBottom:'4px'}}>Comment tu vis le sport ?</h2>
@@ -120,7 +117,6 @@ export default function Onboarding({ user, onComplete }) {
           </>
         )}
 
-        {/* ÉTAPE 4 — Niveau */}
         {step === 4 && (
           <>
             <h2 style={{fontWeight:'800',color:'#111',marginBottom:'4px'}}>Ton niveau actuel ?</h2>
@@ -137,7 +133,36 @@ export default function Onboarding({ user, onComplete }) {
             ))}
             <div style={{display:'flex',gap:'8px',marginTop:'8px'}}>
               <button onClick={() => setStep(3)} style={{flex:1,padding:'12px',borderRadius:'99px',border:'1px solid #e8f7f1',background:'transparent',color:'#6b7a6a',cursor:'pointer'}}>← Retour</button>
-              <button onClick={() => niveau && saveProfile()} disabled={loading} style={{flex:2,padding:'12px',borderRadius:'99px',border:'none',background: niveau ? '#1a9e6e' : '#ccc',color:'white',fontWeight:'600',cursor: niveau ? 'pointer' : 'not-allowed'}}>
+              <button onClick={() => niveau && setStep(5)} style={{flex:2,padding:'12px',borderRadius:'99px',border:'none',background: niveau ? '#1a9e6e' : '#ccc',color:'white',fontWeight:'600',cursor: niveau ? 'pointer' : 'not-allowed'}}>Continuer →</button>
+            </div>
+          </>
+        )}
+
+        {step === 5 && (
+          <>
+            <h2 style={{fontWeight:'800',color:'#111',marginBottom:'4px'}}>Restrictions alimentaires ?</h2>
+            <p style={{color:'#6b7a6a',fontSize:'0.85rem',marginBottom:'20px'}}>On adapte tes menus automatiquement. Tu peux en choisir plusieurs.</p>
+            {[
+              {val:'gluten', label:'🌾 Sans gluten', desc:'Maladie coeliaque ou intolérance'},
+              {val:'lactose', label:'🥛 Sans lactose', desc:'Intolérance au lactose'},
+              {val:'arachides', label:'🥜 Allergie aux arachides', desc:'Cacahuètes et produits dérivés'},
+              {val:'poisson', label:'🐟 Sans poisson', desc:'Allergie ou préférence'},
+              {val:'vegetarien', label:'🌱 Végétarien', desc:'Pas de viande ni poisson'},
+              {val:'vegan', label:'🌿 Végétalien', desc:'Aucun produit animal'},
+            ].map(o => (
+              <button key={o.val}
+                style={{width:'100%',padding:'14px',borderRadius:'12px',border: allergies.includes(o.val) ? '2px solid #1a9e6e' : '1.5px solid #e8f7f1',background: allergies.includes(o.val) ? '#e8f7f1' : 'white',color: allergies.includes(o.val) ? '#0d6b49' : '#111',fontWeight: allergies.includes(o.val) ? '600' : '400',fontSize:'0.9rem',cursor:'pointer',marginBottom:'8px',textAlign:'left'}}
+                onClick={() => setAllergies(prev => prev.includes(o.val) ? prev.filter(a => a !== o.val) : [...prev, o.val])}>
+                <div>{o.label}</div>
+                <div style={{fontSize:'0.75rem',color:'#6b7a6a',marginTop:'2px'}}>{o.desc}</div>
+              </button>
+            ))}
+            <div style={{background:'#e8f7f1',borderRadius:'12px',padding:'10px 14px',marginBottom:'12px',fontSize:'0.78rem',color:'#0d6b49'}}>
+              ✓ Aucune restriction ? Laissez tout décoché et continuez.
+            </div>
+            <div style={{display:'flex',gap:'8px'}}>
+              <button onClick={() => setStep(4)} style={{flex:1,padding:'12px',borderRadius:'99px',border:'1px solid #e8f7f1',background:'transparent',color:'#6b7a6a',cursor:'pointer'}}>← Retour</button>
+              <button onClick={() => saveProfile()} disabled={loading} style={{flex:2,padding:'12px',borderRadius:'99px',border:'none',background:'#1a9e6e',color:'white',fontWeight:'600',cursor:'pointer'}}>
                 {loading ? 'Sauvegarde...' : 'Terminer ✓'}
               </button>
             </div>
